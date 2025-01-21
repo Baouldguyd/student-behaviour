@@ -3,17 +3,23 @@ import pandas as pd
 from datetime import datetime
 from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, DateTime
 
-# Database connection
-engine = create_engine(
-    "postgresql://student_behavior_db_user:uEklECGVh4P7Kaxerxcjq3bMjdGQPtsh@dpg-cu4k3p5umphs738ac3l0-a.oregon-postgres.render.com/student_behavior_db"
-)
+
+try :
+    engine = create_engine(
+        "postgresql://student_behavior_db_user:uEklECGVh4P7Kaxerxcjq3bMjdGQPtsh@dpg-cu4k3p5umphs738ac3l0-a.oregon-postgres.render.com/student_behavior_db"
+    )
+    print("connectec successfully ")
+    print(engine)
+except Exception as e:
+    print("error connecting")    
+
 metadata = MetaData()
 
 # Table definition
 student_behaviour = Table(
     'student_behaviour',
     metadata,
-    Column('id', Integer, primary_key=True),
+    Column('id', Integer, primary_key=True, autoincrement=True),
     Column('teacher', String, nullable=False),
     Column('class', String, nullable=False),
     Column('section', String, nullable=False),
@@ -89,6 +95,7 @@ def save_data_to_db(data):
     """
     Save the submitted data to the PostgreSQL database.
     """
+    print("data here",data)
     try:
         with engine.connect() as conn:
             # Ensure data is a list of dictionaries
@@ -100,15 +107,20 @@ def save_data_to_db(data):
         print("Data successfully inserted into the database.")
     except Exception as e:
         print(f"Error inserting data: {e}")
+    
 
+   
 def check_saved_data():
     """
     Check the saved data from the PostgreSQL database.
     """
-    with engine.connect() as conn:
-        result = conn.execute(student_behaviour.select()).fetchall()
-        for row in result:
-            print(row)
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(student_behaviour.select()).fetchall()
+            for row in result:
+                print(row)
+    except Exception as e:
+        print(f"Error fetching data: {e}")
 
 def app():
     st.title("Student Behavior Tracker")
@@ -179,9 +191,15 @@ def app():
 
                     
 
-            # save_data_to_db(data_to_save)
             print(data_to_save)  # Log the data to be sent to the database
+            # save_data_to_db(data_to_save)
+            print()
+            print()
+            print("fetched data below")
+            check_saved_data()
             save_data_to_db(data_to_save)  # Save the data to the database
+            # reti = cursor.execute("SELECT * from student_db")
+            # print("reti", reti.fetchall())
             st.success("Data successfully submitted!")
          
 
